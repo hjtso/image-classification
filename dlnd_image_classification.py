@@ -129,6 +129,8 @@ tests.test_normalize(normalize)
 # In[4]:
 
 
+from sklearn import preprocessing
+
 def one_hot_encode(x):
     """
     One hot encode a list of sample labels. Return a one-hot encoded vector for each label.
@@ -136,7 +138,6 @@ def one_hot_encode(x):
     : return: Numpy array of one-hot encoded labels
     """
     # TODO: Implement Function
-    from sklearn import preprocessing
     labels = np.array([0,1,2,3,4,5,6,7,8,9])
     lb = preprocessing.LabelBinarizer()
     lb.fit(labels)
@@ -522,7 +523,7 @@ tests.test_conv_net(conv_net)
 # 注意：不需要返回任何内容。该函数只是用来优化神经网络。
 # 
 
-# In[17]:
+# In[14]:
 
 
 def train_neural_network(session, optimizer, keep_probability, feature_batch, label_batch):
@@ -553,7 +554,7 @@ tests.test_train_nn(train_neural_network)
 # 实现函数 `print_stats` 以输出损失和验证准确率。使用全局变量 `valid_features` 和 `valid_labels` 计算验证准确率。使用保留率 `1.0` 计算损失和验证准确率（loss and validation accuracy）。
 # 
 
-# In[21]:
+# In[15]:
 
 
 def print_stats(session, feature_batch, label_batch, cost, accuracy):
@@ -593,7 +594,7 @@ def print_stats(session, feature_batch, label_batch, cost, accuracy):
 #  * ...
 # * 设置 `keep_probability` 表示使用丢弃时保留节点的概率
 
-# In[22]:
+# In[20]:
 
 
 # TODO: Tune Parameters
@@ -607,7 +608,7 @@ keep_probability = 0.8
 # 我们先用单个部分，而不是用所有的 CIFAR-10 批次训练神经网络。这样可以节省时间，并对模型进行迭代，以提高准确率。最终验证准确率达到 50% 或以上之后，在下一部分对所有数据运行模型。
 # 
 
-# In[23]:
+# In[21]:
 
 
 """
@@ -631,7 +632,7 @@ with tf.Session() as sess:
 # 
 # 现在，单个 CIFAR-10 部分的准确率已经不错了，试试所有五个部分吧。
 
-# In[24]:
+# In[22]:
 
 
 """
@@ -667,7 +668,7 @@ with tf.Session() as sess:
 # 
 # 利用测试数据集测试你的模型。这将是最终的准确率。你的准确率应该高于 50%。如果没达到，请继续调整模型结构和参数。
 
-# In[25]:
+# In[23]:
 
 
 """

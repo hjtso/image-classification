@@ -130,6 +130,9 @@ tests.test_normalize(normalize)
 
 
 from sklearn import preprocessing
+labels = np.array([0,1,2,3,4,5,6,7,8,9])
+lb = preprocessing.LabelBinarizer()
+lb.fit(labels)
 
 def one_hot_encode(x):
     """
@@ -138,9 +141,6 @@ def one_hot_encode(x):
     : return: Numpy array of one-hot encoded labels
     """
     # TODO: Implement Function
-    labels = np.array([0,1,2,3,4,5,6,7,8,9])
-    lb = preprocessing.LabelBinarizer()
-    lb.fit(labels)
     return lb.transform(x)
 
 """
@@ -222,7 +222,7 @@ valid_features, valid_labels = pickle.load(open('preprocess_validation.p', mode=
 # 
 # 注意：TensorFlow 中的 `None` 表示形状可以是动态大小。
 
-# In[7]:
+# In[41]:
 
 
 import tensorflow as tf
@@ -282,7 +282,7 @@ tests.test_nn_keep_prob_inputs(neural_net_keep_prob_input)
 # **注意**：对于**此层**，**请勿使用** [TensorFlow Layers](https://www.tensorflow.org/api_docs/python/tf/layers) 或 [TensorFlow Layers (contrib)](https://www.tensorflow.org/api_guides/python/contrib.layers)，但是仍然可以使用 TensorFlow 的 [Neural Network](https://www.tensorflow.org/api_docs/python/tf/nn) 包。对于所有**其他层**，你依然可以使用快捷方法。
 # 
 
-# In[8]:
+# In[42]:
 
 
 def conv2d_maxpool(x_tensor, conv_num_outputs, conv_ksize, conv_strides, pool_ksize, pool_strides):
@@ -303,19 +303,29 @@ def conv2d_maxpool(x_tensor, conv_num_outputs, conv_ksize, conv_strides, pool_ks
         [conv_ksize[0], conv_ksize[1], x_tensor.shape[3].value, conv_num_outputs]))
     
     # 偏置项（从正态分布中输出随机值）
-    conv_bias = tf.Variable(tf.random_normal([conv_num_outputs]))
+    # conv_bias = tf.Variable(tf.random_normal([conv_num_outputs]))
+    
+    # 偏置项（建议使用tf.zeros来初始化为零值）
+    # 参考：https://stackoverflow.com/questions/2480650/role-of-bias-in-neural-networks
+    conv_bias = tf.Variable(tf.zeros([conv_num_outputs]))
     
     # 卷积层
     conv_layer = tf.nn.conv2d(x_tensor, conv_weights, 
                             strides=[1, conv_strides[0], conv_strides[1], 1], padding='SAME')
     conv_layer = tf.nn.bias_add(conv_layer, conv_bias)
-    conv_layer = tf.nn.relu(conv_layer)
+    
+    # conv_layer = tf.nn.relu(conv_layer)
+    # ReLU函数f(x) = max(0, x)的作用是把所有负输入置为0，
+    # 最大池化(max pooling)函数给出相邻矩形区域内的最大值, 
+    # 因为使用的是ReLU激活函数，如果把ReLU放在Max-Pooling下面
+    # 会使部分ReLU的计算结果得以保留，效果会更好
     
     # 最大池化层
     conv_pool = tf.nn.max_pool(conv_layer,
                                   ksize=[1, pool_ksize[0], pool_ksize[1], 1],
                                   strides=[1, pool_strides[0], pool_strides[1], 1],
                                   padding='SAME')
+    conv_pool = tf.nn.relu(conv_pool)
     
     return conv_pool
 
@@ -330,7 +340,7 @@ tests.test_con_pool(conv2d_maxpool)
 # 实现 `flatten` 函数，将 `x_tensor` 的维度从四维张量（4-D tensor）变成二维张量。输出应该是形状（*部分大小（Batch Size）*，*扁平化图片大小（Flattened Image Size）*）。快捷方法：对于此层，你可以使用 [TensorFlow Layers](https://www.tensorflow.org/api_docs/python/tf/layers) 或 [TensorFlow Layers (contrib)](https://www.tensorflow.org/api_guides/python/contrib.layers) 包中的类。如果你想要更大挑战，可以仅使用其他 TensorFlow 程序包。
 # 
 
-# In[9]:
+# In[43]:
 
 
 def flatten(x_tensor):
@@ -353,7 +363,7 @@ tests.test_flatten(flatten)
 # 
 # 实现 `fully_conn` 函数，以向 `x_tensor` 应用完全连接的层级，形状为（*部分大小（Batch Size）*，*num_outputs*）。快捷方法：对于此层，你可以使用 [TensorFlow Layers](https://www.tensorflow.org/api_docs/python/tf/layers) 或 [TensorFlow Layers (contrib)](https://www.tensorflow.org/api_guides/python/contrib.layers) 包中的类。如果你想要更大挑战，可以仅使用其他 TensorFlow 程序包。
 
-# In[10]:
+# In[44]:
 
 
 def fully_conn(x_tensor, num_outputs):
@@ -366,13 +376,22 @@ def fully_conn(x_tensor, num_outputs):
     # TODO: Implement Function
     
     # 权重（从截断的正态分布中输出随机值） --横轴区间（μ-2σ，μ+2σ）内的面积为95.449974%
-    weights = tf.Variable(tf.truncated_normal([x_tensor.shape[1].value, num_outputs]))
+    # 关于权重的初始化，希望权重非常接近零但又不为零，
+    # tf.truncated_normal函数预设的标准差stddev = 1，
+    # 可以改成更小的数值如0.05或0.1，加快模型的收敛
+    # 参考：http://neuralnetworksanddeeplearning.com/chap3.html#weight_initialization
+    weights = tf.Variable(tf.truncated_normal([x_tensor.shape[1].value, num_outputs], stddev = 0.1))
     
     # 偏置项（从正态分布中输出随机值）
-    bias = tf.Variable(tf.random_normal([num_outputs]))
+    # bias = tf.Variable(tf.random_normal([num_outputs]))
+    
+    # 偏置项（建议使用tf.zeros来初始化为零值）
+    # 参考：https://stackoverflow.com/questions/2480650/role-of-bias-in-neural-networks
+    bias = tf.Variable(tf.zeros([num_outputs]))
     
     # 全连接层
     full_layer = tf.add(tf.matmul(x_tensor, weights), bias)
+    full_layer = tf.nn.relu(full_layer) #非线性激活函数
     
     return full_layer
 
@@ -389,7 +408,7 @@ tests.test_fully_conn(fully_conn)
 # 
 # **注意**：该层级不应应用 Activation、softmax 或交叉熵（cross entropy）。
 
-# In[11]:
+# In[45]:
 
 
 def output(x_tensor, num_outputs):
@@ -404,10 +423,13 @@ def output(x_tensor, num_outputs):
     print(num_inputs)
     
     # 权重（从截断的正态分布中输出随机值） --横轴区间（μ-2σ，μ+2σ）内的面积为95.449974%
-    weight = tf.Variable(tf.truncated_normal([num_inputs, num_outputs]))
+    weight = tf.Variable(tf.truncated_normal([num_inputs, num_outputs], stddev = 0.1))
     
-    # 偏置项（从截断的正态分布中输出随机值） --横轴区间（μ-2σ，μ+2σ）内的面积为95.449974%
-    bias = tf.Variable(tf.truncated_normal([num_outputs]))
+    # 偏置项（从正态分布中输出随机值）
+    # bias = tf.Variable(tf.random_normal([num_outputs]))
+    
+    # 偏置项（建议使用tf.zeros来初始化为零值）
+    bias = tf.Variable(tf.zeros([num_outputs]))
     
     # 输出层
     output_layer = tf.add(tf.matmul(x_tensor, weight),bias)
@@ -431,7 +453,7 @@ tests.test_output(output)
 # * 返回输出
 # * 使用 `keep_prob` 向模型中的一个或多个层应用 [TensorFlow 的 Dropout](https://www.tensorflow.org/api_docs/python/tf/nn/dropout)
 
-# In[12]:
+# In[46]:
 
 
 def conv_net(x, keep_prob):
@@ -441,6 +463,18 @@ def conv_net(x, keep_prob):
     : keep_prob: Placeholder tensor that hold dropout keep probability.
     : return: Tensor that represents logits
     """
+    
+    """
+    首先参数的设定方面建议以2的n次方的形式设定，便于tensorflow优化计算。
+    可以尝试增加1到2层卷积和全链接层
+    
+    卷积的输出通道数可以设为如 32 - 64 - 128 这样逐渐递增的形式；
+    全连接层的节点数可以考虑类似 512 - 256 -10 的设定；
+    
+    关于maxpool，对这个项目来说经验效果比较好的是：
+    pooling核大小取(3,3)或(2,2)，pooling步长取(2,2)
+    """
+    
     # TODO: Apply 1, 2, or 3 Convolution and Max Pool layers
     #    Play around with different number of outputs, kernel size and stride
     # Function Definition from Above:
@@ -523,7 +557,7 @@ tests.test_conv_net(conv_net)
 # 注意：不需要返回任何内容。该函数只是用来优化神经网络。
 # 
 
-# In[14]:
+# In[47]:
 
 
 def train_neural_network(session, optimizer, keep_probability, feature_batch, label_batch):
@@ -554,7 +588,7 @@ tests.test_train_nn(train_neural_network)
 # 实现函数 `print_stats` 以输出损失和验证准确率。使用全局变量 `valid_features` 和 `valid_labels` 计算验证准确率。使用保留率 `1.0` 计算损失和验证准确率（loss and validation accuracy）。
 # 
 
-# In[15]:
+# In[48]:
 
 
 def print_stats(session, feature_batch, label_batch, cost, accuracy):
@@ -594,7 +628,7 @@ def print_stats(session, feature_batch, label_batch, cost, accuracy):
 #  * ...
 # * 设置 `keep_probability` 表示使用丢弃时保留节点的概率
 
-# In[20]:
+# In[49]:
 
 
 # TODO: Tune Parameters
@@ -608,7 +642,7 @@ keep_probability = 0.8
 # 我们先用单个部分，而不是用所有的 CIFAR-10 批次训练神经网络。这样可以节省时间，并对模型进行迭代，以提高准确率。最终验证准确率达到 50% 或以上之后，在下一部分对所有数据运行模型。
 # 
 
-# In[21]:
+# In[50]:
 
 
 """
@@ -632,7 +666,7 @@ with tf.Session() as sess:
 # 
 # 现在，单个 CIFAR-10 部分的准确率已经不错了，试试所有五个部分吧。
 
-# In[22]:
+# In[51]:
 
 
 """
@@ -668,7 +702,7 @@ with tf.Session() as sess:
 # 
 # 利用测试数据集测试你的模型。这将是最终的准确率。你的准确率应该高于 50%。如果没达到，请继续调整模型结构和参数。
 
-# In[23]:
+# In[52]:
 
 
 """

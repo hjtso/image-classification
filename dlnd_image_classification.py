@@ -13,7 +13,6 @@
 
 # In[1]:
 
-
 """
 DON'T MODIFY ANYTHING IN THIS CELL THAT IS BELOW THIS LINE
 """
@@ -78,7 +77,6 @@ tests.test_folder_path(cifar10_dataset_folder_path)
 
 # In[2]:
 
-
 get_ipython().magic('matplotlib inline')
 get_ipython().magic("config InlineBackend.figure_format = 'retina'")
 
@@ -100,7 +98,6 @@ helper.display_stats(cifar10_dataset_folder_path, batch_id, sample_id)
 
 # In[3]:
 
-
 def normalize(x):
     """
     Normalize a list of sample image data in the range of 0 to 1
@@ -112,6 +109,8 @@ def normalize(x):
 
     # Method 2:
     # return x/255
+    
+    # 参考：https://www.zhihu.com/question/36946679?sort=created
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL THAT IS BELOW THIS LINE
@@ -127,7 +126,6 @@ tests.test_normalize(normalize)
 # 
 
 # In[4]:
-
 
 from sklearn import preprocessing
 labels = np.array([0,1,2,3,4,5,6,7,8,9])
@@ -161,7 +159,6 @@ tests.test_one_hot_encode(one_hot_encode)
 
 # In[5]:
 
-
 """
 DON'T MODIFY ANYTHING IN THIS CELL
 """
@@ -175,7 +172,6 @@ helper.preprocess_and_save_data(cifar10_dataset_folder_path, normalize, one_hot_
 # 
 
 # In[6]:
-
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL
@@ -223,7 +219,6 @@ valid_features, valid_labels = pickle.load(open('preprocess_validation.p', mode=
 # 注意：TensorFlow 中的 `None` 表示形状可以是动态大小。
 
 # In[41]:
-
 
 import tensorflow as tf
 
@@ -284,7 +279,6 @@ tests.test_nn_keep_prob_inputs(neural_net_keep_prob_input)
 
 # In[42]:
 
-
 def conv2d_maxpool(x_tensor, conv_num_outputs, conv_ksize, conv_strides, pool_ksize, pool_strides):
     """
     Apply convolution then max pooling to x_tensor
@@ -342,7 +336,6 @@ tests.test_con_pool(conv2d_maxpool)
 
 # In[43]:
 
-
 def flatten(x_tensor):
     """
     Flatten x_tensor to (Batch Size, Flattened Image Size)
@@ -364,7 +357,6 @@ tests.test_flatten(flatten)
 # 实现 `fully_conn` 函数，以向 `x_tensor` 应用完全连接的层级，形状为（*部分大小（Batch Size）*，*num_outputs*）。快捷方法：对于此层，你可以使用 [TensorFlow Layers](https://www.tensorflow.org/api_docs/python/tf/layers) 或 [TensorFlow Layers (contrib)](https://www.tensorflow.org/api_guides/python/contrib.layers) 包中的类。如果你想要更大挑战，可以仅使用其他 TensorFlow 程序包。
 
 # In[44]:
-
 
 def fully_conn(x_tensor, num_outputs):
     """
@@ -410,7 +402,6 @@ tests.test_fully_conn(fully_conn)
 
 # In[45]:
 
-
 def output(x_tensor, num_outputs):
     """
     Apply a output layer to x_tensor using weight and bias
@@ -454,7 +445,6 @@ tests.test_output(output)
 # * 使用 `keep_prob` 向模型中的一个或多个层应用 [TensorFlow 的 Dropout](https://www.tensorflow.org/api_docs/python/tf/nn/dropout)
 
 # In[46]:
-
 
 def conv_net(x, keep_prob):
     """
@@ -559,7 +549,6 @@ tests.test_conv_net(conv_net)
 
 # In[47]:
 
-
 def train_neural_network(session, optimizer, keep_probability, feature_batch, label_batch):
     """
     Optimize the session on a batch of images and labels
@@ -589,7 +578,6 @@ tests.test_train_nn(train_neural_network)
 # 
 
 # In[48]:
-
 
 def print_stats(session, feature_batch, label_batch, cost, accuracy):
     """
@@ -630,7 +618,6 @@ def print_stats(session, feature_batch, label_batch, cost, accuracy):
 
 # In[49]:
 
-
 # TODO: Tune Parameters
 epochs = 20
 batch_size = 512
@@ -643,7 +630,6 @@ keep_probability = 0.8
 # 
 
 # In[50]:
-
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL
@@ -667,7 +653,6 @@ with tf.Session() as sess:
 # 现在，单个 CIFAR-10 部分的准确率已经不错了，试试所有五个部分吧。
 
 # In[51]:
-
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL
@@ -703,7 +688,6 @@ with tf.Session() as sess:
 # 利用测试数据集测试你的模型。这将是最终的准确率。你的准确率应该高于 50%。如果没达到，请继续调整模型结构和参数。
 
 # In[52]:
-
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL
